@@ -11,7 +11,7 @@ Table of Contents:
 - Features/goals
 - Getting started
 - Contributing
-- License
+
 
 
 

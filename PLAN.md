@@ -21,12 +21,15 @@
 - [x] Better mobile layout (collapsible navbar, hidden hash col on small screens, flex-wrap cards)
 - [x] Named addresses — alias file (`data/aliases.json`), set/clear on address page, shown throughout UI
 
-## Phase 3 — Multi-node Networking
-- [ ] `/nodes/register` — add peer node URL
-- [ ] `/nodes/sync` — pull chain from peers, apply longest-chain consensus
-- [ ] Transaction broadcast to peers on new tx submission
-- [ ] Block broadcast to peers on new block mined
-- [ ] Auto-discovery via UDP broadcast on LAN (optional)
+## Phase 3 — Multi-node Networking ✅
+- [x] `/nodes/register` — add peer node URL
+- [x] `/nodes/sync` — pull chain from peers, apply longest-chain consensus
+- [x] Transaction broadcast (gossip with dedup) — new txs propagate to all peers
+- [x] Block broadcast — mined blocks propagate instantly; lagging nodes auto-sync
+- [x] UDP auto-discovery — set `NODE_URL` env var to enable LAN peer discovery
+- [x] `/blocks/new` endpoint — accept peer-broadcast blocks with PoW validation
+- [x] `/nodes` endpoint + Nodes UI page
+- [x] Fixed critical bug: `timestamp=0.0` was falsy, giving each node a different genesis hash
 
 ## Phase 4 — Docker
 - [ ] `Dockerfile`

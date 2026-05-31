@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% block title %} — Nodes{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-3">
+  <h4 class="mb-0">Network Nodes</h4>
+  <span class="badge bg-secondary">{{ nodes | length }} peer(s)</span>
+</div>
+
+{% if node_url %}
+<div class="alert alert-secondary small mb-4 py-2">
+  This node: <span class="hash text-warning">{{ node_url }}</span>
+  {% if node_url %}<span class="badge bg-success ms-2">discovery on</span>{% endif %}
+</div>
+{% else %}
+<div class="alert alert-secondary small mb-4 py-2">
+  Set <code>NODE_URL=http://&lt;your-ip&gt;:&lt;port&gt;</code> to enable UDP auto-discovery on the LAN.
+</div>
+{% endif %}
+
+<div class="row g-3 mb-4">
+  <!-- Register peer -->
+  <div class="col-md-6">
+    <div class="card h-100">
+      <div class="card-header">Add Peer Node</div>
+      <div class="card-body">
+        <div class="d-flex gap-2">
+          <input id="peerUrl" class="form-control hash" placeholder="http://192.168.1.x:5000">
+          <button class="btn btn-outline-warning" onclick="addPeer()">Add</button>
+        </div>
+        <div id="addResult" class="mt-2 small d-none"></div>
+      </div>
+    </div>
+  </div>
+  <!-- Sync -->
+  <div class="col-md-6">
+    <div class="card h-100">
+      <div class="card-header">Sync Chain</div>
+      <div class="card-body">
+        <p class="text-secondary small mb-2">Pull from all peers and apply longest-chain consensus.</p>
+        <button class="btn btn-outline-warning" onclick="syncChain()" id="syncBtn">Sync Now</button>
+        <div id="syncResult" class="mt-2 small d-none"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<h5 class="mb-3">Known Peers</h5>
+
+{% if nodes %}
+<div class="card">
+  <div class="card-body p-0">
+    <ul class="list-group list-group-flush">
+      {% for node in nodes %}
+      <li class="list-group-item d-flex justify-content-between align-items-center"
+          style="background:transparent;border-color:#30363d">
+        <a href="{{ node }}/chain" target="_blank" class="hash text-info text-decoration-none">{{ node }}</a>
+        <span class="badge bg-secondary" id="status-{{ loop.index }}">—</span>
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+</div>
+{% else %}
+<p class="text-secondary">No peers registered yet. Add a peer above or set <code>NODE_URL</code> for auto-discovery.</p>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+async function addPeer() {
+  const url = document.getElementById('peerUrl').value.trim();
+  const el = document.getElementById('addResult');
+  if (!url) return;
+  const res = await fetch('/nodes/register', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({nodes: [url]})
+  });
+  const data = await res.json();
+  el.classList.remove('d-none');
+  el.textContent = data.message + ' — total: ' + data.nodes.length;
+  setTimeout(() => location.reload(), 800);
+}
+
+async function syncChain() {
+  const btn = document.getElementById('syncBtn');
+  const el = document.getElementById('syncResult');
+  btn.disabled = true;
+  btn.textContent = 'Syncing…';
+  const res = await fetch('/nodes/sync', {method: 'POST'});
+  const data = await res.json();
+  btn.disabled = false;
+  btn.textContent = 'Sync Now';
+  el.classList.remove('d-none');
+  el.textContent = data.replaced ? `Chain replaced — now at length ${data.length}` : `Already up to date (length ${data.length})`;
+}
+
+// Ping each peer to show status
+{% for node in nodes %}
+(async () => {
+  const el = document.getElementById('status-{{ loop.index }}');
+  try {
+    const res = await fetch('{{ node }}/chain', {signal: AbortSignal.timeout(3000)});
+    const d = await res.json();
+    el.textContent = 'len:' + d.length;
+    el.className = 'badge bg-success';
+  } catch {
+    el.textContent = 'offline';
+    el.className = 'badge bg-danger';
+  }
+})();
+{% endfor %}
+</script>
+{% endblock %}

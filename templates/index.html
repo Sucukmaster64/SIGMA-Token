@@ -1,17 +1,65 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <title>SIGMA</title>
-</head>
+{% extends "base.html" %}
+{% block title %} — Block Explorer{% endblock %}
 
-<h1>SIGMA</h1>
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-3">
+  <h4 class="mb-0">Block Explorer</h4>
+  <div>
+    <span class="badge bg-secondary me-2">{{ length }} blocks</span>
+    <span class="badge bg-warning text-dark">{{ mempool_count }} pending tx</span>
+  </div>
+</div>
 
-<li>
-    <a href="login">Login</a>
-</li>
-<li>
-    <a href="register">Register</a>
-</li>
+<div class="card">
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover mb-0">
+        <thead>
+          <tr>
+            <th class="ps-3">#</th>
+            <th class="d-none d-md-table-cell">Hash</th>
+            <th>Time</th>
+            <th class="text-end pe-3">Txs</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for block in chain %}
+          <tr>
+            <td class="ps-3">
+              <a href="/block/{{ block.index }}" class="text-warning text-decoration-none fw-bold">#{{ block.index }}</a>
+            </td>
+            <td class="hash d-none d-md-table-cell">
+              <a href="/block/{{ block.index }}" class="text-light text-decoration-none">{{ block.hash[:24] }}…</a>
+            </td>
+            <td class="text-secondary small">{{ block.timestamp | dt }}</td>
+            <td class="text-end pe-3">{{ block.transactions | length }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
 
-</html>
-
+{% if total_pages > 1 %}
+<nav class="mt-3" aria-label="Block pages">
+  <ul class="pagination pagination-sm justify-content-center mb-0">
+    <li class="page-item {% if page == 1 %}disabled{% endif %}">
+      <a class="page-link" href="/?page={{ page - 1 }}">‹</a>
+    </li>
+    {% for p in range(1, total_pages + 1) %}
+      {% if p == page %}
+        <li class="page-item active"><span class="page-link">{{ p }}</span></li>
+      {% elif p == 1 or p == total_pages or (p >= page - 2 and p <= page + 2) %}
+        <li class="page-item"><a class="page-link" href="/?page={{ p }}">{{ p }}</a></li>
+      {% elif p == page - 3 or p == page + 3 %}
+        <li class="page-item disabled"><span class="page-link">…</span></li>
+      {% endif %}
+    {% endfor %}
+    <li class="page-item {% if page == total_pages %}disabled{% endif %}">
+      <a class="page-link" href="/?page={{ page + 1 }}">›</a>
+    </li>
+  </ul>
+</nav>
+{% endif %}
+{% endblock %}

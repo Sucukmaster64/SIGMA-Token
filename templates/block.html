@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% block title %} — Block #{{ block.index }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <a href="/" class="text-secondary text-decoration-none small">← Explorer</a>
+  <div class="d-flex gap-2">
+    {% if block.index > 0 %}
+      <a href="/block/{{ block.index - 1 }}" class="btn btn-sm btn-outline-secondary">‹ #{{ block.index - 1 }}</a>
+    {% endif %}
+    {% if block.index < total_blocks - 1 %}
+      <a href="/block/{{ block.index + 1 }}" class="btn btn-sm btn-outline-secondary">#{{ block.index + 1 }} ›</a>
+    {% endif %}
+  </div>
+</div>
+
+<h4 class="mb-3">Block <span class="text-warning">#{{ block.index }}</span></h4>
+
+<div class="card mb-4">
+  <div class="card-body">
+    <dl class="row mb-0 small">
+      <dt class="col-sm-3 text-secondary">Hash</dt>
+      <dd class="col-sm-9 hash">{{ block.hash }}</dd>
+
+      <dt class="col-sm-3 text-secondary">Previous Hash</dt>
+      <dd class="col-sm-9 hash">
+        {% if block.index > 0 %}
+          <a href="/block/{{ block.index - 1 }}" class="text-decoration-none text-light">{{ block.previous_hash }}</a>
+        {% else %}
+          {{ block.previous_hash }}
+        {% endif %}
+      </dd>
+
+      <dt class="col-sm-3 text-secondary">Time</dt>
+      <dd class="col-sm-9">{{ block.timestamp | dt }}</dd>
+
+      <dt class="col-sm-3 text-secondary">Nonce</dt>
+      <dd class="col-sm-9">{{ block.nonce }}</dd>
+
+      <dt class="col-sm-3 text-secondary">Transactions</dt>
+      <dd class="col-sm-9">{{ block.transactions | length }}</dd>
+    </dl>
+  </div>
+</div>
+
+<h5 class="mb-3">Transactions <span class="badge bg-secondary">{{ block.transactions | length }}</span></h5>
+
+{% for tx in block.transactions %}
+<div class="card mb-2 {% if highlight == tx.tx_id %}border-warning{% endif %}">
+  <div class="card-body py-2 px-3">
+    {% if highlight == tx.tx_id %}
+      <div class="text-warning small mb-1 fw-bold">▶ matched search</div>
+    {% endif %}
+    <div class="d-flex justify-content-between align-items-start flex-wrap gap-1">
+      <div>
+        {% if tx.sender == "COINBASE" %}
+          <span class="badge bg-warning text-dark me-1">COINBASE</span>
+        {% else %}
+          <span class="text-secondary small">From </span>
+          <a href="/address/{{ tx.sender }}" class="text-decoration-none text-info hash">
+            {%- if aliases.get(tx.sender) -%}
+              {{ aliases[tx.sender] }}
+            {%- else -%}
+              {{ tx.sender[:20] }}…
+            {%- endif -%}
+          </a>
+          {% if aliases.get(tx.sender) %}
+            <span class="badge bg-secondary alias-badge">{{ tx.sender[:10] }}…</span>
+          {% endif %}
+        {% endif %}
+        <span class="text-secondary mx-1">→</span>
+        <a href="/address/{{ tx.recipient }}" class="text-decoration-none text-info hash">
+          {%- if aliases.get(tx.recipient) -%}
+            {{ aliases[tx.recipient] }}
+          {%- else -%}
+            {{ tx.recipient[:20] }}…
+          {%- endif -%}
+        </a>
+        {% if aliases.get(tx.recipient) %}
+          <span class="badge bg-secondary alias-badge">{{ tx.recipient[:10] }}…</span>
+        {% endif %}
+      </div>
+      <span class="badge bg-success">{{ tx.amount }} SIGMA</span>
+    </div>
+    <div class="text-secondary small mt-1 hash">tx: {{ tx.tx_id }}</div>
+  </div>
+</div>
+{% endfor %}
+{% endblock %}

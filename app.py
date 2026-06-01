@@ -114,6 +114,12 @@ def _discovery_listener():
             pass
 
 
+# Register any peers listed in PEERS env var (comma-separated URLs)
+for _peer in os.environ.get("PEERS", "").split(","):
+    _peer = _peer.strip().rstrip("/")
+    if _peer:
+        blockchain.register_node(_peer)
+
 if NODE_URL:
     threading.Thread(target=_discovery_sender, daemon=True).start()
     threading.Thread(target=_discovery_listener, daemon=True).start()

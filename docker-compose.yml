@@ -1,0 +1,45 @@
+services:
+  node1:
+    build: .
+    ports:
+      - "5001:5000"
+    volumes:
+      - node1_data:/data
+    environment:
+      NODE_URL: http://node1:5000
+      PEERS: http://node2:5000,http://node3:5000
+    networks:
+      - sigma
+
+  node2:
+    build: .
+    ports:
+      - "5002:5000"
+    volumes:
+      - node2_data:/data
+    environment:
+      NODE_URL: http://node2:5000
+      PEERS: http://node1:5000,http://node3:5000
+    networks:
+      - sigma
+
+  node3:
+    build: .
+    ports:
+      - "5003:5000"
+    volumes:
+      - node3_data:/data
+    environment:
+      NODE_URL: http://node3:5000
+      PEERS: http://node1:5000,http://node2:5000
+    networks:
+      - sigma
+
+volumes:
+  node1_data:
+  node2_data:
+  node3_data:
+
+networks:
+  sigma:
+    driver: bridge

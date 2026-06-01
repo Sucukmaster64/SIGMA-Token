@@ -31,10 +31,12 @@
 - [x] `/nodes` endpoint + Nodes UI page
 - [x] Fixed critical bug: `timestamp=0.0` was falsy, giving each node a different genesis hash
 
-## Phase 4 — Docker
-- [ ] `Dockerfile`
-- [ ] `docker-compose.yml` (3 nodes on ports 5001–5003)
-- [ ] Environment config: `PORT`, `PEERS`, `DATA_DIR`, `DIFFICULTY`, `MINING_REWARD`
+## Phase 4 — Docker ✅
+- [x] `Dockerfile` (python:3.11-slim, /data volume)
+- [x] `docker-compose.yml` — 3 nodes on ports 5001–5003, peered via PEERS env var
+- [x] `PEERS` env var — comma-separated URLs registered on startup
+- [x] `NODE_URL`, `PORT`, `DATA_DIR`, `DEBUG`, `DISCOVERY_PORT` all configurable
+- [x] Updated README with quickstart, Docker setup, env vars, full API + UI reference
 
 ---
 
